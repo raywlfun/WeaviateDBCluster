@@ -1,4 +1,4 @@
-# Weaviate Cluster Operations & Analysis 🔍
+# Weaviate Cluster Operations
 
 ## Overview
 
