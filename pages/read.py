@@ -1,19 +1,20 @@
 import streamlit as st
 from utils.sidebar.navigation import navigate
 from utils.sidebar.helper import update_side_bar_labels
-from utils.collections.data import list_all_collections, get_tenant_names, fetch_collection_data
+from utils.collections.read_all_objects import list_all_collections, get_tenant_names, fetch_collection_data
+from utils.page_config import set_custom_page_config
 
+# Read all objects from collections and tenants
 def get_all_objects_of_collections_and_tenants():
 	client = st.session_state.client
 
-	# Initialize session state variables
 	if "collections_list" not in st.session_state:
 		collections = list_all_collections(client)
 		if not isinstance(collections, list):
 			collections = list(collections.keys())
 		collections.sort()
 		st.session_state.collections_list = collections
-	
+
 	if "query_results" not in st.session_state:
 		st.session_state.query_results = None
 	if "current_collection" not in st.session_state:
@@ -56,7 +57,7 @@ def get_all_objects_of_collections_and_tenants():
 		)
 		if items_per_page != st.session_state.items_per_page:
 			st.session_state.items_per_page = items_per_page
-			st.session_state.query_results = None  # Reset results when items per page changes
+			st.session_state.query_results = None # Reset results when items per page changes
 
 	# Check if we need to reset the results (when collection or tenant changes)
 	if (st.session_state.current_collection != selected_collection or 
@@ -90,14 +91,14 @@ def get_all_objects_of_collections_and_tenants():
 			if not result["data"].empty:
 				# Display pagination info
 				st.info(f"Showing page {result['current_page']} of {result['total_pages']} " +
-					   f"(Total items: {result['total_count']})")
+					f"(Total items: {result['total_count']})")
 
 				# Display the data
 				st.dataframe(result["data"].astype(str), use_container_width=True)
 
 				# Pagination controls
 				col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
-				
+
 				with col1:
 					if st.button("⏮️ First", disabled=st.session_state.current_page == 1):
 						st.session_state.current_page = 1
@@ -106,7 +107,7 @@ def get_all_objects_of_collections_and_tenants():
 							page=1, items_per_page=st.session_state.items_per_page
 						)
 						st.rerun()
-				
+
 				with col2:
 					if st.button("◀️ Previous", disabled=st.session_state.current_page == 1):
 						st.session_state.current_page -= 1
@@ -115,7 +116,7 @@ def get_all_objects_of_collections_and_tenants():
 							page=st.session_state.current_page, items_per_page=st.session_state.items_per_page
 						)
 						st.rerun()
-				
+
 				with col3:
 					if st.button("Next ▶️", disabled=st.session_state.current_page >= result["total_pages"]):
 						st.session_state.current_page += 1
@@ -124,7 +125,7 @@ def get_all_objects_of_collections_and_tenants():
 							page=st.session_state.current_page, items_per_page=st.session_state.items_per_page
 						)
 						st.rerun()
-				
+
 				with col4:
 					if st.button("Last ⏭️", disabled=st.session_state.current_page >= result["total_pages"]):
 						st.session_state.current_page = result["total_pages"]
@@ -141,7 +142,7 @@ def get_all_objects_of_collections_and_tenants():
 					max_value=result["total_pages"],
 					value=st.session_state.current_page
 				)
-				
+
 				if page_number != st.session_state.current_page:
 					st.session_state.current_page = page_number
 					st.session_state.query_results = fetch_collection_data(
@@ -154,7 +155,9 @@ def get_all_objects_of_collections_and_tenants():
 				st.warning("No data found")
 
 def main():
-	st.title("Data 📁")
+
+	set_custom_page_config(page_title="Read Collection Objects")
+
 	navigate()
 
 	if st.session_state.get("client_ready"):

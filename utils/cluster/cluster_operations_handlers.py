@@ -157,7 +157,7 @@ def action_collection_schema():
 		if "error" in schema:
 			st.error(schema["error"])
 		else:
-			st.markdown("#### Collection Schema & Properties")
+			st.markdown("#### Collection Properties")
 			for collection_name, collection_details in schema.items():
 				with st.expander(f"Collection: {collection_name}", expanded=False):
 					st.markdown(f"**Name:** {collection_details.name}")

@@ -1,10 +1,8 @@
 import pandas as pd
 from weaviate.classes.query import Sort
 
+# function to list all collections
 def list_all_collections(client):
-	"""
-	Retrieves a list of all collection names.
-	"""
 	try:
 		collections = client.collections.list_all()
 		return collections
@@ -12,11 +10,8 @@ def list_all_collections(client):
 		print(f"Error retrieving collections: {e}")
 		return []
 
+# Retrieves tenant names for a given collection if multi-tenancy is enabled.
 def get_tenant_names(client, collection_name):
-	"""
-	Retrieves tenant names for a given collection if multi-tenancy is enabled.
-	Returns a list of tenant names or an empty list if not enabled.
-	"""
 	try:
 		collection = client.collections.get(collection_name)
 		tenants = collection.tenants.get()
@@ -28,11 +23,8 @@ def get_tenant_names(client, collection_name):
 			print(f"Error retrieving tenants: {e}")
 			return []
 
+# Fetches data from a collection with pagination.
 def fetch_collection_data(client, collection_name, tenant_name=None, page=1, items_per_page=1000):
-	"""
-	Fetches data from a collection with pagination.
-	If tenant_name is provided, fetches data for that tenant.
-	"""
 	try:
 		collection = client.collections.get(collection_name)
 		if tenant_name:
@@ -42,19 +34,19 @@ def fetch_collection_data(client, collection_name, tenant_name=None, page=1, ite
 		total_count = collection.aggregate.over_all(total_count=True).total_count
 
 		collection_data = []
-		
+
 		# Calculate how many items to skip
 		items_to_skip = (page - 1) * items_per_page
-		
+
 		#fetch_objects
 		query_result = collection.query.fetch_objects(
 			limit=items_per_page,
 			offset=items_to_skip,
 			return_metadata=["creation_time", "last_update_time"],
 			include_vector=True,
-			sort=Sort.by_property("_id", ascending=True)  # Add proper sort
+			sort=Sort.by_property("_id", ascending=True) # Add proper sort
 		)
-		
+
 		# Access the objects property of the query result
 		for item in query_result.objects:
 			row = item.properties.copy()

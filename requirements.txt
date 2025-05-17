@@ -2,3 +2,4 @@ streamlit
 weaviate-client
 requests
 pandas
+Pillow
