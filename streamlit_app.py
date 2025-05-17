@@ -4,16 +4,14 @@ from utils.cluster.cluster_operations_handlers import action_check_shard_consist
 from utils.sidebar.navigation import navigate
 from utils.connection.weaviate_connection import close_weaviate_client
 from utils.sidebar.helper import update_side_bar_labels, clear_session_state
+from utils.page_config import set_custom_page_config
 
 # ------------------------ß--------------------------------------------------
 # Streamlit Page Config
 # --------------------------------------------------------------------------
-st.set_page_config(
-	page_title="Weaviate Cluster Operations",
-	layout="wide",
-	initial_sidebar_state="expanded",
-	page_icon="🔍",
-)
+
+# Use with default page title
+set_custom_page_config()
 
 # --------------------------------------------------------------------------
 # Navigation on side bar
@@ -21,7 +19,7 @@ st.set_page_config(
 navigate()
 
 # Connect to Weaviate
-st.sidebar.title("Weaviate Connection 🔗")
+st.sidebar.title("Weaviate Connection 🖇️")
 use_local = st.sidebar.checkbox("Local Cluster", value=False)
 
 if use_local:
@@ -48,7 +46,7 @@ else:
 	# Check if the URL has https:// prefix, if not add it
 	if cluster_endpoint and not cluster_endpoint.startswith('https://'):
 		cluster_endpoint = f"https://{cluster_endpoint}"
-		
+
 	cluster_api_key = st.sidebar.text_input(
 		"Cloud Cluster API Key", 
 		placeholder="Enter Cluster Admin Key", 
@@ -56,11 +54,55 @@ else:
 		value=st.session_state.get("cluster_api_key", "")
 	).strip()
 
+# --------------------------------------------------------------------------
+# Vectorizers Integration API Keys Section
+# --------------------------------------------------------------------------
+st.sidebar.markdown("Add API keys for Model provider integrations (optional):")
+
+# Store previous values or use empty strings
+default_openai = st.session_state.get("openai_key", "")
+default_cohere = st.session_state.get("cohere_key", "")
+default_jinaai = st.session_state.get("jinaai_key", "")
+default_huggingface = st.session_state.get("huggingface_key", "")
+
+# Input fields for API keys
+openai_key = st.sidebar.text_input("OpenAI API Key", type="password", value=default_openai)
+cohere_key = st.sidebar.text_input("Cohere API Key", type="password", value=default_cohere)
+jinaai_key = st.sidebar.text_input("JinaAI API Key", type="password", value=default_jinaai)
+huggingface_key = st.sidebar.text_input("HuggingFace API Key", type="password", value=default_huggingface)
+
+# Save entered keys to session state
+st.session_state.openai_key = openai_key
+st.session_state.cohere_key = cohere_key
+st.session_state.jinaai_key = jinaai_key
+st.session_state.huggingface_key = huggingface_key
+
+# --------------------------------------------------------------------------
+# Connect/Disconnect Buttons
+# --------------------------------------------------------------------------
 if st.sidebar.button("Connect", use_container_width=True, type="secondary"):
 	close_weaviate_client()
 	clear_session_state()
+
+	# Vectorizers Integration API Keys
+	vectorizer_integration_keys = {}
+	if openai_key:
+		vectorizer_integration_keys["X-OpenAI-Api-Key"] = openai_key
+	if cohere_key:
+		vectorizer_integration_keys["X-Cohere-Api-Key"] = cohere_key
+	if jinaai_key:
+		vectorizer_integration_keys["X-JinaAI-Api-Key"] = jinaai_key
+	if huggingface_key:
+		vectorizer_integration_keys["X-HuggingFace-Api-Key"] = huggingface_key
+
+	# Store the keys in session state
+	st.session_state.openai_key = openai_key
+	st.session_state.cohere_key = cohere_key
+	st.session_state.jinaai_key = jinaai_key
+	st.session_state.huggingface_key = huggingface_key
+
 	if use_local:
-		if initialize_client(cluster_endpoint, cluster_api_key, use_local=True):
+		if initialize_client(cluster_endpoint, cluster_api_key, use_local=True, vectorizer_integration_keys=vectorizer_integration_keys):
 			st.sidebar.success("Connected to local successfully!")
 		else:
 			st.sidebar.error("Connection failed!")
@@ -68,7 +110,7 @@ if st.sidebar.button("Connect", use_container_width=True, type="secondary"):
 		if not cluster_endpoint or not cluster_api_key:
 			st.sidebar.error("Please insert the cluster endpoint and API key!")
 		else:
-			if initialize_client(cluster_endpoint, cluster_api_key, use_local=False):
+			if initialize_client(cluster_endpoint, cluster_api_key, use_local=False, vectorizer_integration_keys=vectorizer_integration_keys):
 				st.sidebar.success("Connected successfully!")
 			else:
 				st.sidebar.error("Connection failed!")
@@ -78,7 +120,6 @@ if st.sidebar.button("Disconnect", use_container_width=True, type="primary"):
 		message = close_weaviate_client()
 		clear_session_state()
 		st.rerun()
-		st.sidebar.warning(message)
 
 # Essential run for the first time
 update_side_bar_labels()
@@ -86,9 +127,6 @@ update_side_bar_labels()
 # --------------------------------------------------------------------------
 # Main Page Content (Cluster Operations)
 # --------------------------------------------------------------------------
-
-st.title("Weaviate Cluster 🔍")
-st.markdown("---")
 st.markdown("###### Any function with (APIs) means it is run using RESTful endpoints. Otherwise, it is executed through the DB client.")
 
 # --------------------------------------------------------------------------

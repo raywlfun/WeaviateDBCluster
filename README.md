@@ -10,28 +10,40 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 
 ## Features
 
-- **Shards & Nodes**: 
-   - View shard details across nodes as well as node details.
-   - Update read-only shards to READY status (⚠️ Admin API-Key required).
-- **Collections & Tenants**: 
-   - Aggregate and view collections and their tenants.
-   - Delete collections and tenants (⚠️ Admin API-Key required).
-        - Batch deletion support for multiple collections or tenants.
-- **Collections Configuration**: Explore collection configurations.
-- **Schema**: Fetch and view the schema configuration of your Weaviate cluster.
-- **Statistics**: Analyze cluster synchronization and node statistics.
-- **Metadata**: View cluster metadata & modules.
-- **Consistency**: Analyze shards for inconsistency.
-- **Read Repair**: Force repair collection objects inconsistency across the nodes.
-- **Object Operations**:
-   - Fetch object data in collections.
-   - Analyze consistency of an object across nodes (currently hardcoded for a max of 11 nodes).
-   - Fetch object data in tenants.
-- **Multi-Tenancy Operations**:
-   - Visualize tenants and their states.
-- **Collection Data**:
-   - Read and get all your objects data from a collection/tenant in a table.
-   - Download the data locally in a `.csv` file.
+### Vectorization
+- Support for OpenAI, Cohere, HuggingFace and JinaAI
+- Add API keys for vectorization providers (optional)
+- Vectorization during object updates
+
+### Cluster Management
+- **Shards & Nodes**
+  - View shard details across nodes
+  - View node details
+  - Update read-only shards to READY status (⚠️ Admin API-Key required)
+
+- **Collections & Tenants**
+  - View collections and their tenants
+  - Explore collection configurations
+  - View schema configuration
+  - Analyze cluster statistics and synchronization
+  - View cluster metadata & modules
+  - Analyze shard consistency
+  - Force repair collection objects across nodes
+
+### Object Operations
+- **Read**
+  - View object data in collections/tenants
+  - Display data in tables including vectors
+  - Download data as CSV files
+
+- **Update**
+  - Edit objects with vectorization
+  - Download object data as CSV
+  - Analyze object consistency across nodes (supports up to 11 nodes)
+
+- **Delete**
+  - Delete collections and tenants (⚠️ Admin API-Key required)
+  - Batch deletion support for multiple collections/tenants
 
 ## Configuration
 

@@ -23,6 +23,7 @@ def get_object_in_tenant(client, collection_name, uuid, tenant):
 
 	return data_object
 
+# Display object in a table format
 def display_object_as_table(data_object):
 	if data_object is None:
 		print("No data to display.")
@@ -49,6 +50,7 @@ def display_object_as_table(data_object):
 
 	return df
 
+# Find object in in the nodes in a Non Multitenant collection
 def find_object_in_collection_on_nodes(client_endpoint, api_key, collection_name, object_uuid):
 
 	node_names = [
@@ -78,6 +80,7 @@ def find_object_in_collection_on_nodes(client_endpoint, api_key, collection_name
 	df = pd.DataFrame([results], index=[object_uuid])
 	return df
 
+# Find object in in the nodes in a Multitenant collection
 def find_object_in_tenant_on_nodes(client_endpoint, api_key, collection_name, object_uuid, tenant):
 
 	node_names = [
@@ -102,7 +105,21 @@ def find_object_in_tenant_on_nodes(client_endpoint, api_key, collection_name, ob
 		elif resp_single.status_code == 500:
 			results[node] = "N/A" # Not applicable as the node does not exist
 		else:
-			results[node] = f"Error {resp_single.status_code}" # Error
+			results[node] = f"Error {resp_single.status_code}"
 
 	df = pd.DataFrame([results], index=[object_uuid])
 	return df
+
+# Update object
+def update_object_properties(client, collection_name, uuid, properties, tenant=None):
+	try:
+		collection = client.collections.get(collection_name)
+		if tenant:
+			collection = collection.with_tenant(tenant)
+		collection.data.update(
+			uuid=uuid,
+			properties=properties
+		)
+		return True
+	except Exception as e:
+		raise Exception(f"Failed to update object: {str(e)}")
