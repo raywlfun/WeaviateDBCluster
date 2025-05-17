@@ -18,11 +18,6 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   - View node details
   - Update read-only shards to READY status (⚠️ Admin API-Key required)
 
-#### Vectorization
-- Support for OpenAI, Cohere, HuggingFace and JinaAI
-- Add API keys for vectorization providers (optional)
-- Vectorization during object updates
-
 - **Collections & Tenants**
   - View collections and their tenants
   - Explore collection configurations
@@ -32,6 +27,11 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   - Analyze shard consistency
   - Force repair collection objects across nodes
 
+#### Vectorization
+- Support for OpenAI, Cohere, HuggingFace and JinaAI
+- Add API keys for vectorization providers (optional)
+- Vectorization during object updates
+  
 ### Object Operations
 - **Read**
   - View object data in collections/tenants
