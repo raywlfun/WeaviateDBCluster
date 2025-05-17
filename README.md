@@ -4,22 +4,24 @@
 
 Interact with and manage Weaviate Cluster operations. This app provides tools to inspect shards, view collections & tenants, explore schemas, analyze cluster statistics, and interact with objects.
 
-<img width="1857" alt="image" src="https://github.com/user-attachments/assets/a91aa7ee-87e1-44d1-bc6f-eb88a94cc3a3" />
+<a href="https://weaviatecluster.streamlit.app/">
+  Visit Weaviate Cluster WebApp
+</a>
 
-[![Go to the WebApp](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://weaviatecluster.streamlit.app/)
+<img width="1698" alt="image" src="https://github.com/user-attachments/assets/a07260c9-78dd-477c-a3a5-bd94a96fe445" />
 
 ## Features
-
-### Vectorization
-- Support for OpenAI, Cohere, HuggingFace and JinaAI
-- Add API keys for vectorization providers (optional)
-- Vectorization during object updates
 
 ### Cluster Management
 - **Shards & Nodes**
   - View shard details across nodes
   - View node details
   - Update read-only shards to READY status (⚠️ Admin API-Key required)
+
+#### Vectorization
+- Support for OpenAI, Cohere, HuggingFace and JinaAI
+- Add API keys for vectorization providers (optional)
+- Vectorization during object updates
 
 - **Collections & Tenants**
   - View collections and their tenants
