@@ -8,7 +8,7 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   Visit Weaviate Cluster WebApp
 </a>
 
-<img width="1698" alt="image" src="https://github.com/user-attachments/assets/a07260c9-78dd-477c-a3a5-bd94a96fe445" />
+<img width="1912" alt="image" src="https://github.com/user-attachments/assets/ba6fc852-14ec-4c4c-80af-0df0d1a27729" />
 
 ## Features
 
@@ -34,7 +34,7 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   
 ### Object Operations
 - **Create**
-  - Create new collections
+  - Create new collections (⚠️ Admin API-Key required)
   - Supported Vectorizers (OpenAI, Cohere, HuggingFace, JinaAI)
   - Batch upload data from CSV/JSON files
 
