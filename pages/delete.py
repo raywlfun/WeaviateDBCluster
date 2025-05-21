@@ -65,7 +65,7 @@ def handle_collection_selection():
 					else:
 						st.session_state.selected_collections.discard(col)
 	else:
-		st.info("No regular collections found")
+		st.info("No collections found")
 
 def handle_mt_collection_selection():
 	"""Handle the multi-tenancy collections section"""

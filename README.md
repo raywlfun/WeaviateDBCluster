@@ -33,6 +33,11 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 - Vectorization during object updates
   
 ### Object Operations
+- **Create**
+  - Create new collections
+  - Supported Vectorizers (OpenAI, Cohere, HuggingFace, JinaAI)
+  - Batch upload data from CSV/JSON files
+
 - **Read**
   - View object data in collections/tenants
   - Display data in tables including vectors

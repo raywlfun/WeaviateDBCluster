@@ -180,8 +180,6 @@ with col8:
 	if st.button("Read Repair (APIs)", use_container_width=True):
 		st.session_state["active_button"] = "read_repairs"
 
-st.markdown("---")
-
 # --------------------------------------------------------------------------
 # Execute the active button's action
 # --------------------------------------------------------------------------
