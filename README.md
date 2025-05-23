@@ -8,7 +8,7 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   Visit Weaviate Cluster WebApp
 </a>
 
-<img width="1912" alt="image" src="https://github.com/user-attachments/assets/ba6fc852-14ec-4c4c-80af-0df0d1a27729" />
+<img width="1910" alt="image" src="https://github.com/user-attachments/assets/41b0c172-d4b2-4c7f-8881-774e9e931bcd" />
 
 ## Features
 
