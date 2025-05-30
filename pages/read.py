@@ -27,7 +27,7 @@ def main():
 			st.session_state.items_per_page = 1000
 
 		# Refresh button to load collections
-		if st.button("Load Collections List",type="primary", use_container_width=True):
+		if st.button("Update Collections List...", use_container_width=True):
 			collections = list_all_collections(client)
 			if not isinstance(collections, list):
 				collections = list(collections.keys())

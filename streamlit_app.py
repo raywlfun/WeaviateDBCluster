@@ -127,8 +127,8 @@ update_side_bar_labels()
 # --------------------------------------------------------------------------
 # Main Page Content (Cluster Operations)
 # --------------------------------------------------------------------------
+st.markdown("###### ⚠️ Important: This tool is designed and tested on the latest Weaviate DB version. Some features may not be compatible with older versions. Please ensure you are using the latest stable version of Weaviate DB for optimal performance.")
 st.markdown("###### Any function with (APIs) means it is run using RESTful endpoints. Otherwise, it is executed through the DB client.")
-
 # --------------------------------------------------------------------------
 # Buttons (calls a function)
 # --------------------------------------------------------------------------
