@@ -33,8 +33,8 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 - Vectorization during object updates
   
 ### Object Operations
-- **Create**
-  - Create new collections (⚠️ Admin API-Key required)
+- **Create** (⚠️ Admin API-Key required)
+  - Create new collections
   - Supported Vectorizers (OpenAI, Cohere, HuggingFace, JinaAI)
   - Batch upload data from CSV/JSON files
 
@@ -51,13 +51,15 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   - Display data in tables including vectors
   - Download data as CSV files
 
-- **Update**
-  - Edit objects with vectorization
-  - Download object data as CSV
-  - Analyze object consistency across nodes (supports up to 11 nodes)
+- **Update** (⚠️ Admin API-Key required)
+  - Edit collection configuration with support for all mutable parameters
+  - Update objects with optional vectorization
+  - Export object data to CSV format
+  - Verify object consistency across cluster nodes (supports up to 11 nodes)
+  - Real-time object validation and error handling
 
-- **Delete**
-  - Delete collections and tenants (⚠️ Admin API-Key required)
+- **Delete** (⚠️ Admin API-Key required)
+  - Delete collections and tenants
   - Batch deletion support for multiple collections/tenants
 
 ## Configuration
