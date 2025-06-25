@@ -1,8 +1,9 @@
 import pandas as pd
 from weaviate.classes.query import Sort
-
-# function to list all collections
+import streamlit as st
+# List all collections
 def list_all_collections(client):
+	print("list_all_collections() called")
 	try:
 		collections = client.collections.list_all()
 		return collections
@@ -12,6 +13,7 @@ def list_all_collections(client):
 
 # Retrieves tenant names for a given collection if multi-tenancy is enabled.
 def get_tenant_names(client, collection_name):
+	print(f"get_tenant_names() called for collection: {collection_name}")
 	try:
 		collection = client.collections.get(collection_name)
 		tenants = collection.tenants.get()
@@ -23,10 +25,12 @@ def get_tenant_names(client, collection_name):
 			print(f"Error retrieving tenants: {e}")
 			return []
 
-# Fetches data from a collection with pagination.
-def fetch_collection_data(client, collection_name, tenant_name=None, page=1, items_per_page=1000):
+# Fetches data from a collection with pagination. Caches the results for 1 hour (Feel free to change).
+@st.cache_data(ttl=3600)
+def fetch_collection_data(_client, collection_name, tenant_name=None, page=1, items_per_page=1000):
+	print(f"fetch_collection_data() called")
 	try:
-		collection = client.collections.get(collection_name)
+		collection = _client.collections.get(collection_name)
 		if tenant_name:
 			collection = collection.with_tenant(tenant_name)
 
@@ -44,7 +48,7 @@ def fetch_collection_data(client, collection_name, tenant_name=None, page=1, ite
 			offset=items_to_skip,
 			return_metadata=["creation_time", "last_update_time"],
 			include_vector=True,
-			sort=Sort.by_property("_id", ascending=True) # Add proper sort
+			sort=Sort.by_property("_id", ascending=True)
 		)
 
 		# Access the objects property of the query result

@@ -12,6 +12,16 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 
 ## Features
 
+### Connection
+- **Local**
+- **Custom**
+- **Cloud**
+
+#### Vectorization
+- Support for OpenAI, Cohere, HuggingFace and JinaAI
+- Add API keys for vectorization providers (optional)
+- Vectorization during object updates
+
 ### Cluster Management
 - **Shards & Nodes**
   - View shard details across nodes
@@ -20,6 +30,8 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 
 - **Collections & Tenants**
   - View collections and their tenants
+  - Aggregate Collections & Tenants
+    - With Data cached
   - Explore collection configurations
   - View schema configuration
   - Analyze cluster statistics and synchronization
@@ -27,10 +39,10 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   - Analyze shard consistency
   - Force repair collection objects across nodes
 
-#### Vectorization
-- Support for OpenAI, Cohere, HuggingFace and JinaAI
-- Add API keys for vectorization providers (optional)
-- Vectorization during object updates
+### **Multi Tenancy**
+  - View MT collections only and configurations
+    - With Data cached
+  - Analyze tenants in the collection and states
   
 ### Object Operations
 - **Create** (⚠️ Admin API-Key required)
@@ -49,6 +61,7 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
 - **Read**
   - View object data in collections/tenants
   - Display data in tables including vectors
+    - With Data cached
   - Download data as CSV files
 
 - **Update** (⚠️ Admin API-Key required)

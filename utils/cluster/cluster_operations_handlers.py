@@ -11,7 +11,7 @@ from utils.cluster.cluster_operations import fetch_cluster_statistics, process_s
 
 # Fetch node info and display node and shard details.
 def action_nodes_and_shards():
-	print("Fetching node and shard details...")
+	print("action_nodes_and_shards called")
 	node_info = get_shards_info(st.session_state.client)
 	if node_info:
 		processed_data = process_shards_data(node_info)
@@ -63,7 +63,7 @@ def action_nodes_and_shards():
 
 # Check for shard consistency.
 def action_check_shard_consistency():
-	print("Checking shard consistency...")
+	print("action_check_shard_consistency called")
 	node_info = get_shards_info(st.session_state.client)
 	if node_info:
 		df_inconsistent_shards = check_shard_consistency(node_info)
@@ -79,7 +79,7 @@ def action_check_shard_consistency():
 
 # Aggregate collections and tenants.
 def action_aggregate_collections_tenants():
-	print("Aggregating collections and tenants...")
+	print("action_aggregate_collections_tenants called")
 	st.markdown("###### Collections & Tenants aggregation time may vary depending on the dataset size, as it iterates through all collections and tenants. Check below for tables with statistics.")
 	result = aggregate_collections(st.session_state.client)
 	if "error" in result:
@@ -151,7 +151,7 @@ def action_aggregate_collections_tenants():
 
 # Fetch and display collection properties.
 def action_collection_schema():
-	print("Fetching schema...")
+	print("action_collection_schema called")
 	schema = get_schema(st.session_state.client)
 	if schema is not None:
 		if "error" in schema:
@@ -184,6 +184,7 @@ def action_collection_schema():
 
 # Fetch and display cluster statistics (RAFT).
 def action_statistics(cluster_endpoint, api_key):
+	print("action_statistics called")
 	st.markdown("#### Cluster Statistics Details")
 	try:
 		stats = fetch_cluster_statistics(cluster_endpoint, api_key)
@@ -223,9 +224,9 @@ def action_statistics(cluster_endpoint, api_key):
 
 # Fetch and display cluster metadata.
 def action_metadata(cluster_endpoint, api_key):
-	print("Fetching metadata...")
+	print("action_metadata called")
 	st.markdown("#### Cluster Metadata Details")
-	metadata_result = get_metadata(cluster_endpoint, api_key)
+	metadata_result = get_metadata()
 
 	if "error" in metadata_result:
 		st.error(metadata_result["error"])
@@ -249,7 +250,7 @@ def action_metadata(cluster_endpoint, api_key):
 
 # Fetch and display collection configurations.
 def action_collections_configuration(cluster_endpoint, api_key):
-	print("Fetching collection configurations...")
+	print("action_collections_configuration called")
 	"""
 	  1. Checks if connected.
 	  2. Loads collection list (and stores in session_state).
@@ -276,7 +277,6 @@ def action_collections_configuration(cluster_endpoint, api_key):
 		st.warning("No collections available to display.")
 		return
 
-# Fetch the chosen collection's config
 	if st.button("Get Configuration", use_container_width=True):
 		config = fetch_collection_config(cluster_endpoint, api_key, selected_collection)
 		if "error" in config:
@@ -356,178 +356,180 @@ def action_collections_configuration(cluster_endpoint, api_key):
 						st.dataframe(df.astype(str), use_container_width=True)
 					else:
 						st.markdown(f"**{details}**")
-
+# Read repairs handler
 def action_read_repairs(cluster_endpoint, api_key):
+	print("action_read_repairs called")
     # Step 1: Run shard consistency check and extract collection names.
-    node_info = get_shards_info(st.session_state.client)
-    if not node_info:
-        st.error("Failed to retrieve node and shard details.")
-        return
+	node_info = get_shards_info(st.session_state.client)
+	if not node_info:
+		st.error("Failed to retrieve node and shard details.")
+		return
 
-    df_inconsistent = check_shard_consistency(node_info)
-    if df_inconsistent is None:
-        st.success("All shards are consistent. No read repairs needed.")
-        return
+	df_inconsistent = check_shard_consistency(node_info)
+	if df_inconsistent is None:
+		st.success("All shards are consistent. No read repairs needed.")
+		return
 
-    inconsistent_collections = list(df_inconsistent["Collection"].unique())
-    total = len(inconsistent_collections)
+	inconsistent_collections = list(df_inconsistent["Collection"].unique())
+	total = len(inconsistent_collections)
 
-    # Store the inconsistent collections list in session state if not already set.
-    if "repair_collections" not in st.session_state:
-        st.session_state.repair_collections = inconsistent_collections
+	# Store the inconsistent collections list in session state if not already set.
+	if "repair_collections" not in st.session_state:
+		st.session_state.repair_collections = inconsistent_collections
 
-    st.markdown(f"### Inconsistent {total} collections")
-    st.dataframe(df_inconsistent.astype(str), use_container_width=True)
+	st.markdown(f"### Inconsistent {total} collections")
+	st.dataframe(df_inconsistent.astype(str), use_container_width=True)
 
-    # Step 2: Synchronize selected_collection with repair_collections.
-    if "selected_collection" not in st.session_state or st.session_state.selected_collection not in st.session_state.repair_collections:
-        st.session_state.selected_collection = st.session_state.repair_collections[0] if st.session_state.repair_collections else None
+	# Step 2: Synchronize selected_collection with repair_collections.
+	if "selected_collection" not in st.session_state or st.session_state.selected_collection not in st.session_state.repair_collections:
+		st.session_state.selected_collection = st.session_state.repair_collections[0] if st.session_state.repair_collections else None
 
-    # Radio button for selecting the collection to repair, only if there are collections.
-    if st.session_state.repair_collections:
-        selected_collection = st.radio(
-            "Select a collection to repair",
-            st.session_state.repair_collections,
-            index=st.session_state.repair_collections.index(st.session_state.selected_collection) if st.session_state.selected_collection in st.session_state.repair_collections else 0,
-            key="collection_radio"
-        )
-        st.session_state.selected_collection = selected_collection
-    else:
-        st.info("No inconsistent collections to repair.")
-        st.session_state.selected_collection = None
+	# Radio button for selecting the collection to repair, only if there are collections.
+	if st.session_state.repair_collections:
+		selected_collection = st.radio(
+			"Select a collection to repair",
+			st.session_state.repair_collections,
+			index=st.session_state.repair_collections.index(st.session_state.selected_collection) if st.session_state.selected_collection in st.session_state.repair_collections else 0,
+			key="collection_radio"
+		)
+		st.session_state.selected_collection = selected_collection
+	else:
+		st.info("No inconsistent collections to repair.")
+		st.session_state.selected_collection = None
 
-    # Stop any ongoing read repairs.
-    if st.button("Stop the process", use_container_width=True):
-        print("Stopping read repairs...")
-        if 'repair_in_progress' in st.session_state:
-            del st.session_state.repair_in_progress
-        if 'all_uuids' in st.session_state:
-            del st.session_state.all_uuids
-        if 'current_batch_index' in st.session_state:
-            del st.session_state.current_batch_index
-        if 'progress' in st.session_state:
-            del st.session_state.progress
-        st.stop()
-        st.success("Read repairs stopped.")
+	# Stop any ongoing read repairs.
+	if st.button("Stop the process", use_container_width=True):
+		print("Stopping read repairs...")
+		if 'repair_in_progress' in st.session_state:
+			del st.session_state.repair_in_progress
+		if 'all_uuids' in st.session_state:
+			del st.session_state.all_uuids
+		if 'current_batch_index' in st.session_state:
+			del st.session_state.current_batch_index
+		if 'progress' in st.session_state:
+			del st.session_state.progress
+		st.stop()
+		st.success("Read repairs stopped.")
 
-    # Refresh the collections list when the button is clicked.
-    if st.button("Refresh Collections", use_container_width=True):
-       st.success("Collections list refreshed.")
+	# Refresh the collections list when the button is clicked.
+	if st.button("Refresh Collections", use_container_width=True):
+		st.success("Collections list refreshed.")
 		
-    # Step 3: Trigger read repairs.
-    if st.button("Start Read Repairs", use_container_width=True):
-        print("Starting read repairs...")
-        if 'repair_in_progress' in st.session_state:
-            del st.session_state.repair_in_progress
-        if 'all_uuids' in st.session_state:
-            del st.session_state.all_uuids
-        if 'current_batch_index' in st.session_state:
-            del st.session_state.current_batch_index
-        if 'progress' in st.session_state:
-            del st.session_state.progress
-        # Ensure the selected collection is still valid.
-        if selected_collection not in st.session_state.repair_collections:
-            st.error("Selected collection no longer exists in repair list")
-            return
+	# Step 3: Trigger read repairs.
+	if st.button("Start Read Repairs", use_container_width=True):
+		print("Starting read repairs...")
+		if 'repair_in_progress' in st.session_state:
+			del st.session_state.repair_in_progress
+		if 'all_uuids' in st.session_state:
+			del st.session_state.all_uuids
+		if 'current_batch_index' in st.session_state:
+			del st.session_state.current_batch_index
+		if 'progress' in st.session_state:
+			del st.session_state.progress
+		# Ensure the selected collection is still valid.
+		if selected_collection not in st.session_state.repair_collections:
+			st.error("Selected collection no longer exists in repair list")
+			return
 
-        # If repairs are not already in progress, initialize the repair state.
-        if 'repair_in_progress' not in st.session_state:
-            st.markdown(f"**Starting read repairs for collection** (1 iteration only & 500 UUID per batch): `{selected_collection}`")
-            
-            # Store the cluster endpoint and API key for use in subsequent reruns.
-            st.session_state.repair_base_url = cluster_endpoint
-            st.session_state.repair_api_key = api_key
+		# If repairs are not already in progress, initialize the repair state.
+		if 'repair_in_progress' not in st.session_state:
+			st.markdown(f"**Starting read repairs for collection** (1 iteration only & 500 UUID per batch): `{selected_collection}`")
+			
+			# Store the cluster endpoint and API key for use in subsequent reruns.
+			st.session_state.repair_base_url = cluster_endpoint
+			st.session_state.repair_api_key = api_key
 
-            # Step 3.1: Fetch all object UUIDs for the selected collection.
-            base_url = cluster_endpoint
-            bearer_token = api_key
-            headers = {"Authorization": f"Bearer {bearer_token}"}
+			# Step 3.1: Fetch all object UUIDs for the selected collection.
+			base_url = cluster_endpoint
+			bearer_token = api_key
+			headers = {"Authorization": f"Bearer {bearer_token}"}
 
-            limit = 1000
-            offset = 0
-            all_uuids = []
-            st.session_state["repair_logs"] = "Fetching objects...\n"
-            
-            while True:
-                params_list = {"limit": limit, "offset": offset, "class": selected_collection, "consistency_level": "ALL"}
-                resp = requests.get(f"{base_url}/v1/objects", params=params_list, headers=headers)
-                if resp.status_code != 200:
-                    st.error(f"Error fetching objects: {resp.status_code} {resp.text}")
-                    return
-                data = resp.json()
-                objects_batch = data.get("objects", [])
-                if not objects_batch:
-                    break
-                all_uuids.extend(obj["id"] for obj in objects_batch)
-                offset += limit
+			limit = 1000
+			offset = 0
+			all_uuids = []
+			st.session_state["repair_logs"] = "Fetching objects...\n"
+			
+			while True:
+				params_list = {"limit": limit, "offset": offset, "class": selected_collection, "consistency_level": "ALL"}
+				resp = requests.get(f"{base_url}/v1/objects", params=params_list, headers=headers)
+				if resp.status_code != 200:
+					st.error(f"Error fetching objects: {resp.status_code} {resp.text}")
+					return
+				data = resp.json()
+				objects_batch = data.get("objects", [])
+				if not objects_batch:
+					break
+				all_uuids.extend(obj["id"] for obj in objects_batch)
+				offset += limit
 
-            st.session_state.repair_logs += f"Fetched {len(all_uuids)} objects.\n=== Starting Iteration 1 ===\n"
+			st.session_state.repair_logs += f"Fetched {len(all_uuids)} objects.\n=== Starting Iteration 1 ===\n"
 
-            # Initialize repair state.
-            st.session_state.repair_in_progress = True
-            st.session_state.all_uuids = all_uuids
-            st.session_state.current_batch_index = 0
-            st.session_state.progress = 0.0
-            st.session_state.batch_size = 500  # Process 500 UUIDs per batch
+			# Initialize repair state.
+			st.session_state.repair_in_progress = True
+			st.session_state.all_uuids = all_uuids
+			st.session_state.current_batch_index = 0
+			st.session_state.progress = 0.0
+			st.session_state.batch_size = 500  # Process 500 UUIDs per batch
 
-    # If a repair is in progress, process the next batch.
-    if st.session_state.get("repair_in_progress"):
-        # Retrieve the stored cluster endpoint and API key.
-        base_url = st.session_state.get("repair_base_url")
-        bearer_token = st.session_state.get("repair_api_key")
-        selected_collection = st.session_state.selected_collection
+	# If a repair is in progress, process the next batch.
+	if st.session_state.get("repair_in_progress"):
+		# Retrieve the stored cluster endpoint and API key.
+		base_url = st.session_state.get("repair_base_url")
+		bearer_token = st.session_state.get("repair_api_key")
+		selected_collection = st.session_state.selected_collection
 
-        log_container = st.empty()
-        progress_bar = st.progress(st.session_state.progress)
+		log_container = st.empty()
+		progress_bar = st.progress(st.session_state.progress)
 
-        all_uuids = st.session_state.all_uuids
-        batch_size = st.session_state.batch_size
-        current_batch_index = st.session_state.current_batch_index
-        total_uuids = len(all_uuids)
-        headers = {"Authorization": f"Bearer {bearer_token}"}
+		all_uuids = st.session_state.all_uuids
+		batch_size = st.session_state.batch_size
+		current_batch_index = st.session_state.current_batch_index
+		total_uuids = len(all_uuids)
+		headers = {"Authorization": f"Bearer {bearer_token}"}
 
-        # Process the current batch.
-        for i in range(current_batch_index, min(current_batch_index + batch_size, total_uuids)):
-            uuid = all_uuids[i]
-            url = f"{base_url}/v1/objects/{selected_collection}/{uuid}"
-            params_single = {"consistency_level": "ALL"}
-            resp_single = requests.get(url, params=params_single, headers=headers)
-            index = i + 1
+		# Process the current batch.
+		for i in range(current_batch_index, min(current_batch_index + batch_size, total_uuids)):
+			uuid = all_uuids[i]
+			url = f"{base_url}/v1/objects/{selected_collection}/{uuid}"
+			params_single = {"consistency_level": "ALL"}
+			resp_single = requests.get(url, params=params_single, headers=headers)
+			index = i + 1
 
-            if resp_single.status_code == 200:
-                log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid}\n"
-                log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
-                print(log_entry)
-            elif resp_single.status_code == 404:
-                log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid} => Not found.\n"
-                log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
-                print(log_entry)
-            else:
-                log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid} => Error {resp_single.status_code}\n"
-                log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
-                print(log_entry)
+			if resp_single.status_code == 200:
+				log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid}\n"
+				log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
+				print(log_entry)
+			elif resp_single.status_code == 404:
+				log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid} => Not found.\n"
+				log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
+				print(log_entry)
+			else:
+				log_entry = f"[Iteration 1] [{index}/{total_uuids}] UUID={uuid} => Error {resp_single.status_code}\n"
+				log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
+				print(log_entry)
 
-            st.session_state.repair_logs += log_entry
-            st.session_state.progress = index / total_uuids
+			st.session_state.repair_logs += log_entry
+			st.session_state.progress = index / total_uuids
 
-        # Update the current batch index.
-        st.session_state.current_batch_index = min(current_batch_index + batch_size, total_uuids)
+		# Update the current batch index.
+		st.session_state.current_batch_index = min(current_batch_index + batch_size, total_uuids)
 
-        # Update the UI with logs and progress.
-        log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
-        progress_bar.progress(st.session_state.progress)
+		# Update the UI with logs and progress.
+		log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
+		progress_bar.progress(st.session_state.progress)
 
-        # Check if all UUIDs have been processed.
-        if st.session_state.current_batch_index >= total_uuids:
-            st.session_state.repair_logs += "=== Iteration 1 Complete ==="
-            log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
-            st.success("Read repairs completed!")
-            # Clean up repair state variables.
-            del st.session_state.repair_in_progress
-            del st.session_state.all_uuids
-            del st.session_state.current_batch_index
-            del st.session_state.progress
-        else:
-            # Force a rerun to process the next batch.
-            time.sleep(0.5)
-            st.rerun()
+		# Check if all UUIDs have been processed.
+		if st.session_state.current_batch_index >= total_uuids:
+			st.session_state.repair_logs += "=== Iteration 1 Complete ==="
+			log_container.text_area("Read Repair Logs", st.session_state.repair_logs, height=300)
+			st.success("Read repairs completed!")
+			# Clean up repair state variables.
+			del st.session_state.repair_in_progress
+			del st.session_state.all_uuids
+			del st.session_state.current_batch_index
+			del st.session_state.progress
+		else:
+			# Force a rerun to process the next batch.
+			time.sleep(0.5)
+			st.rerun()
+			

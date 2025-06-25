@@ -9,14 +9,17 @@ from utils.collections.create import (
 )
 from utils.page_config import set_custom_page_config
 from utils.sidebar.navigation import navigate
+from utils.sidebar.helper import update_side_bar_labels
 
 # initialize session state
 def initialize_session_state():
+	print("initialize_session_state() called")
 	if 'collection_info' not in st.session_state:
 		st.session_state.collection_info = None
 
-# Function to create a form for collection creation
+# Create a form for collection creation
 def create_collection_form():
+	print("create_collection_form() called")
 	with st.form("create_collection_form"):
 		# Collection name input
 		collection_name = st.text_input("Collection Name", placeholder="Enter collection name").strip()
@@ -30,13 +33,13 @@ def create_collection_form():
 		)
 
 		# Show warnings for missing API keys
-		if selected_vectorizer == "text2vec_openai" and not st.session_state.get("openai_key"):
+		if selected_vectorizer == "text2vec_openai" and not st.session_state.get("active_openai_key"):
 			st.warning("⚠️ OpenAI API key is required. Please reconnect with the key or select BYOV.")
-		elif selected_vectorizer == "text2vec_cohere" and not st.session_state.get("cohere_key"):
+		elif selected_vectorizer == "text2vec_cohere" and not st.session_state.get("active_cohere_key"):
 			st.warning("⚠️ Cohere API key is required for text2vec_cohere. Please reconnect with the key or select BYOV.")
-		elif selected_vectorizer == "text2vec_jinaai" and not st.session_state.get("jinaai_key"):
+		elif selected_vectorizer == "text2vec_jinaai" and not st.session_state.get("active_jinaai_key"):
 			st.warning("⚠️ JinaAI API key is required. Please reconnect with the key or select BYOV.")
-		elif selected_vectorizer == "text2vec_huggingface" and not st.session_state.get("huggingface_key"):
+		elif selected_vectorizer == "text2vec_huggingface" and not st.session_state.get("active_huggingface_key"):
 			st.warning("⚠️ HuggingFace API key is required. Please reconnect with the key or select BYOV.")
 
 		# File upload
@@ -51,9 +54,9 @@ def create_collection_form():
 
 		return submit_button, collection_name, selected_vectorizer, uploaded_file
 
-# Function to handle form submission
+# Handle form submission
 def handle_form_submission(client, collection_name, selected_vectorizer, uploaded_file):
-	"""Handle the form submission and data upload process"""
+	print("handle_form_submission() called")
 	if not collection_name:
 		st.error("Please enter a collection name")
 		return
@@ -112,19 +115,16 @@ def handle_form_submission(client, collection_name, selected_vectorizer, uploade
 
 # Function to display collection information
 def display_collection_info(client):
+	print("display_collection_info() called")
 	if not st.session_state.collection_info:
 		return
 
 	info = st.session_state.collection_info
 
 	# Button to view objects
-	if st.button("View Basic Collection Info"):
-		# Display basic info
-		col1, col2 = st.columns(2)
-		with col1:
-			st.metric("Collection Name", info["name"])
-		with col2:
-			st.metric("Object Count", info["object_count"])
+	if st.button("View Collection (100 Objects only)", use_container_width=True):
+		# Display only Object Count
+		st.metric("Object Count", info["object_count"])
 
 		# Then display the objects
 		success, msg, df = get_collection_objects(client, info["name"])
@@ -140,7 +140,7 @@ def main():
 	navigate()
 
 	if st.session_state.get("client_ready"):
-
+		update_side_bar_labels()
 		initialize_session_state()
 		client = st.session_state.client
 		submit_button, collection_name, selected_vectorizer, uploaded_file = create_collection_form()

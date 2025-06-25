@@ -11,7 +11,7 @@ from weaviate.classes.config import PQEncoderType, PQEncoderDistribution, Vector
 
 # Function to map schema properties to their types
 def build_type_map_from_schema(schema):
-	print(f"build_type_map_from_schema is called")
+	print(f"build_type_map_from_schema called")
 	type_map = {}
 	for prop in schema.get('properties', []):
 		name = prop.get('name')
@@ -38,7 +38,7 @@ def build_type_map_from_schema(schema):
 
 # Function to parse values based on their type
 def parse_value_by_type(value, type_name):
-	print(f"parse_value_by_type is called")
+	print(f"parse_value_by_type called")
 	if type_name in ('text', 'string', 'uuid', 'geoCoordinates', 'phoneNumber', 'blob'):
 		return str(value)
 	elif type_name == 'boolean':
@@ -90,7 +90,7 @@ def parse_value_by_type(value, type_name):
 
 # Function to format values for display
 def format_value_for_display(value, type_name):
-	print(f"format_value_for_display is called")
+	print(f"format_value_for_display called")
 	if type_name.endswith('_array') or type_name == 'object':
 		return json.dumps(value, indent=2) if value else '[]' if type_name.endswith('_array') else '{}'
 	elif type_name == 'date':
@@ -120,7 +120,7 @@ def format_value_for_display(value, type_name):
 
 # Function to display the object as a table and edit its properties
 def get_object_details():
-	print(f"get_object_details is called")
+	print(f"get_object_details called")
 	collection_name = st.text_input("Collection Name")
 	object_uuid = st.text_input("Object UUID")
 	with_tenant = st.checkbox("Tenant", value=False)
@@ -147,11 +147,11 @@ def get_object_details():
 
 	# Fetch schema and build type map
 	if collection_name and (st.session_state.type_map is None or st.session_state.get('last_collection_name') != collection_name):
-		# Try to get API key and endpoint from session state
-		api_key = st.session_state.get('cluster_api_key')
-		endpoint = st.session_state.get('cluster_endpoint')
-		if api_key and endpoint:
-			schema = fetch_collection_config(endpoint, api_key, collection_name)
+		# Get API key and endpoint from session state
+		active_endpoint = st.session_state.active_endpoint
+		active_api_key = st.session_state.active_api_key
+		if active_api_key and active_endpoint:
+			schema = fetch_collection_config(active_endpoint, active_api_key, collection_name)
 			if schema and 'error' not in schema:
 				st.session_state.type_map = build_type_map_from_schema(schema)
 				st.session_state.last_collection_name = collection_name
@@ -313,12 +313,12 @@ def get_object_details():
 			return
 		try:
 			# Fetch node data and display table
-			api_key = st.session_state.cluster_api_key
-			cluster_endpoint = st.session_state.cluster_endpoint
+			active_endpoint = st.session_state.active_endpoint
+			active_api_key = st.session_state.active_api_key
 			if with_tenant and tenant_name:
-				data_object = find_object_in_tenant_on_nodes(cluster_endpoint, api_key, collection_name, object_uuid, tenant_name)
+				data_object = find_object_in_tenant_on_nodes(active_endpoint, active_api_key, collection_name, object_uuid, tenant_name)
 			else:
-				data_object = find_object_in_collection_on_nodes(cluster_endpoint, api_key, collection_name, object_uuid)
+				data_object = find_object_in_collection_on_nodes(active_endpoint, active_api_key, collection_name, object_uuid)
 			node_df = data_object
 			st.dataframe(node_df, use_container_width=True)
 			st.text("✔ Found | ✖ Not Found | N/A The node does not exist (Hardcoded 11 nodes as maximum for now)")
@@ -327,7 +327,7 @@ def get_object_details():
 
 # Get collection configuration
 def get_collection_configuration():
-	print(f"get_collection_configuration is called")
+	print(f"get_collection_configuration called")
 	st.markdown("### Collection Configuration")
 
 	# Collection selection
@@ -358,7 +358,7 @@ def get_collection_configuration():
 
 # Update collection configuration UI
 def update_collection_config_ui(config):
-	print(f"update_collection_config_ui is called")
+	print(f"update_collection_config_ui called")
 	with st.form("edit_collection_config"):
 		# Description (always present)
 		description = getattr(config, 'description', "")

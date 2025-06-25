@@ -1,19 +1,38 @@
 import streamlit as st
 from utils.connection.weaviate_connection import get_weaviate_client, status
 
-# This function initializes the Weaviate client and sets the session state variables.
-def initialize_client(cluster_endpoint, cluster_api_key, use_local=False, vectorizer_integration_keys=None):
-	print("Initializing Weaviate Client...")
+# Initializes the Weaviate client and sets the session state variables.
+def initialize_client(
+	cluster_endpoint=None, 
+	cluster_api_key=None, 
+	use_local=False, 
+	vectorizer_integration_keys=None, 
+	use_custom=False, 
+	http_host_endpoint=None, 
+	http_port_endpoint=None, 
+	grpc_host_endpoint=None, 
+	grpc_port_endpoint=None, 
+	custom_secure=False
+):
+	print("initialize_client() called")
 	try:
-		client = get_weaviate_client(cluster_endpoint, cluster_api_key, use_local, vectorizer_integration_keys)
+		client = get_weaviate_client(
+			cluster_endpoint=cluster_endpoint,
+			cluster_api_key=cluster_api_key,
+			use_local=use_local,
+			vectorizer_integration_keys=vectorizer_integration_keys,
+			use_custom=use_custom,
+			http_host_endpoint=http_host_endpoint,
+			http_port_endpoint=http_port_endpoint,
+			grpc_host_endpoint=grpc_host_endpoint,
+			grpc_port_endpoint=grpc_port_endpoint,
+			custom_secure=custom_secure
+		)
 		st.session_state.client = client
 		ready, server_version, client_version = status(client)
 		st.session_state.client_ready = ready
 		st.session_state.server_version = server_version
 		st.session_state.client_version = client_version
-		st.session_state.cluster_endpoint = cluster_endpoint if not use_local else "http://localhost:8080"
-		st.session_state.cluster_api_key = cluster_api_key
-		st.session_state.vectorizer_integration_keys = vectorizer_integration_keys
 		return True
 	except Exception as e:
 		st.sidebar.error(f"Connection Error: {e}")

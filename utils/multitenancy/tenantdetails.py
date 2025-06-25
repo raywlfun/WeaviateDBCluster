@@ -1,11 +1,15 @@
-# Get tenant States
+import streamlit as st
+
+# Get tenants from a collection.
 def get_tenant_details(client, collection):
+	print(f"get_tenant_details() called for collection: {collection}")
 	col = client.collections.get(collection)
 	tenants = col.tenants.get()
 	return tenants
 
 # This function aggregates the tenant states and counts the number of tenants in each state.
 def aggregate_tenant_states(tenants):
+	print(f"aggregate_tenant_states() called")
 	tenant_states = {}
 	for tenant_id, tenant in tenants.items():
 		state = tenant.activityStatusInternal.name
@@ -17,6 +21,7 @@ def aggregate_tenant_states(tenants):
 # Get multi-tenancy collections only
 # If multiTenancyConfig exists and 'enabled' is True, add the collection to the list
 def get_multitenancy_collections(schema):
+	print("get_multitenancy_collections() called")
 	enabled_collections = []
 	for collection in schema.get('classes', []):
 		collection_name = collection.get('class', 'Unknown Class')
