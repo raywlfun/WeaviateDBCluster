@@ -4,9 +4,12 @@ from utils.search.keyword import keyword_search
 from utils.cluster.collection import list_collections
 from utils.page_config import set_custom_page_config
 from utils.sidebar.navigation import navigate
+from utils.sidebar.helper import update_side_bar_labels
 
+# Initialize session state variables
 def initialize_session_state():
-	"""Initialize session state variables"""
+	print("initialize_session_state() called")
+
 	if 'selected_collection' not in st.session_state:
 		st.session_state.selected_collection = None
 	if 'search_query' not in st.session_state:
@@ -20,6 +23,7 @@ def initialize_session_state():
 
 # Display the search interface with parameter
 def display_search_interface():
+	print("display_search_interface() called")
 	# Collection selection
 	collections = list_collections(st.session_state.client)
 	selected_collection = st.selectbox(
@@ -99,6 +103,7 @@ def display_search_interface():
 
 # Function to display results
 def display_results(success: bool, message: str, df, time_taken: float):
+	print("display_results() called")
 	if success:
 		# Create a container for the success message and timing
 		col1, col2 = st.columns([3, 1])
@@ -115,6 +120,7 @@ def display_results(success: bool, message: str, df, time_taken: float):
 def main():
 	set_custom_page_config(page_title="Search")
 	navigate()
+	update_side_bar_labels()
 
 	if st.session_state.get("client_ready"):
 		initialize_session_state()

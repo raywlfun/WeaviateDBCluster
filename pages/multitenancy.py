@@ -6,40 +6,47 @@ from utils.multitenancy.tenantdetails import get_tenant_details, get_multitenanc
 from utils.cluster.cluster_operations import get_schema
 from utils.page_config import set_custom_page_config
 
-def display_multitenancy(cluster_url, api_key):
-
-	schema = get_schema(cluster_url, api_key)
-	if 'error' in schema:
+#Displays UI for multi-tenancy collections.	Returns True if MT collections are found, False otherwise.
+def display_multitenancy(client):
+	print("display_multitenancy() called")
+	schema = get_schema(client)
+	
+	if isinstance(schema, dict) and 'error' in schema:
 		st.error(schema['error'])
-		return
+		return False
 
-	# Get collections with multi-tenancy enabled
-	enabled_collections = get_multitenancy_collections(schema)
+	# Get collections with multi-tenancy enabled.
+	# The schema from client.collections.list_all() is a dict of collection names to config objects.
+	enabled_collections = []
+	for name, config in schema.items():
+		if hasattr(config, 'multi_tenancy_config') and config.multi_tenancy_config and config.multi_tenancy_config.enabled:
+			# Convert the config object to a dict for display in a DataFrame.
+			mt_config_dict = {
+				'enabled': config.multi_tenancy_config.enabled,
+				'autoTenantCreation': config.multi_tenancy_config.auto_tenant_creation,
+				'autoTenantActivation': config.multi_tenancy_config.auto_tenant_activation
+			}
+			enabled_collections.append({
+				'collection_name': name,
+				'multiTenancyConfig': mt_config_dict
+			})
 
 	if not enabled_collections:
 		st.warning("No collections with enabled multi-tenancy found.")
-		return
+		st.session_state["enabled_collections"] = [] # Ensure session state is cleared/reset
+		return False
 
-	# Load collections list if not already loaded in session_state
-	if "enabled_collections" not in st.session_state:
-		if enabled_collections and not isinstance(enabled_collections, dict):
-			st.session_state["enabled_collections"] = enabled_collections
-		else:
-			st.session_state["enabled_collections"] = []
-
+	# Always update session state with the fresh list of collections.
+	st.session_state["enabled_collections"] = enabled_collections
 	# Show a selectbox for the user to choose a collection
-	if st.session_state["enabled_collections"]:
-		collection_count = len(enabled_collections)
-		st.markdown(f"###### Total Number of Multi Tenancy Collections in the list: **{collection_count}**\n")
-		collection_names = [collection['collection_name'] for collection in st.session_state["enabled_collections"]]
-		selected_collection_name = st.selectbox(
-			"Select a MT Collection",
-			collection_names,
-		)
-		st.session_state["selected_collection_name"] = selected_collection_name
-	else:
-		st.warning("No collections available to display.")
-		return
+	collection_count = len(enabled_collections)
+	st.markdown(f"###### Total Number of Multi Tenancy Collections in the list: **{collection_count}**\n")
+	collection_names = [collection['collection_name'] for collection in enabled_collections]
+	selected_collection_name = st.selectbox(
+		"Select a MT Collection",
+		collection_names,
+	)
+	st.session_state["selected_collection_name"] = selected_collection_name
 
 	if st.button("Get Multi Tenancy Configuration"):
 		selected_collection = next((collection for collection in st.session_state["enabled_collections"] if collection['collection_name'] == selected_collection_name), None)
@@ -49,8 +56,10 @@ def display_multitenancy(cluster_url, api_key):
 			st.dataframe(multi_tenancy_df.astype(str), use_container_width=True)
 		else:
 			st.error("Failed to find the selected collection in the available collections.")
+	return True
 
 def tenant_details():
+	print("tenant_details() called")
 	if st.button("Get Tenant Details"):
 		selected_collection_name = st.session_state.get("selected_collection_name")
 		tenants = get_tenant_details(st.session_state.client, selected_collection_name)
@@ -75,8 +84,9 @@ def main():
 
 	if st.session_state.get("client_ready"):
 		update_side_bar_labels()
-		display_multitenancy(st.session_state.cluster_endpoint, st.session_state.cluster_api_key)
-		tenant_details()
+		found_mt_collections = display_multitenancy(st.session_state.client)
+		if found_mt_collections:
+			tenant_details()
 	else:
 		st.warning("Please Establish a connection to Weaviate in Cluster page!")
 

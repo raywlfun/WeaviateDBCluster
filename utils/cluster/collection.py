@@ -1,14 +1,20 @@
 import pandas as pd
 import requests
+import streamlit as st
 
+# Get collections count
 def get_collectios_count(client):
+	print("get_collectios_count() called")
 	collections = client.collections.list_all()
 	collection_count = len(collections)
 	return collection_count
 
-def aggregate_collections(client):
+# Aggregate collections. Caches the results for 1 hour (Feel free to change).
+@st.cache_data(ttl=3600)
+def aggregate_collections(_client):
+	print(f"aggregate_collections() called")
 	try:
-		collections = client.collections.list_all()
+		collections = _client.collections.list_all()
 		total_tenants_count = 0
 		result_data = []
 		empty_collections = 0
@@ -22,12 +28,10 @@ def aggregate_collections(client):
 		if collections:
 			# Store the actual number of collections
 			collection_count = len(collections)
-
 			for collection_name in collections:
 				collection_row = {"Collection": collection_name, "Count": "", "Tenant": "", "Tenant Count": ""}
 				result_data.append(collection_row)
-
-				collection = client.collections.get(collection_name)
+				collection = _client.collections.get(collection_name)
 				try:
 					# Attempt to get tenants for the collection (check if multi-tenancy is enabled)
 					tenants = collection.tenants.get()
@@ -83,7 +87,7 @@ def aggregate_collections(client):
 			result_df = pd.DataFrame(result_data)
 
 			return {
-				"collection_count": collection_count,  # This is now the correct total number of collections
+				"collection_count": collection_count,
 				"total_tenants_count": total_tenants_count,
 				"empty_collections": empty_collections,
 				"empty_tenants": empty_tenants,
@@ -111,24 +115,27 @@ def aggregate_collections(client):
 	except Exception as e:
 		return {"error": str(e)}
 
-
+# Get the schema of the Weaviate instance.
 def get_schema(client):
+	print("get_schema() called")
 	try:
 		schema = client.collections.list_all()
 		return schema if schema else None
 	except Exception as e:
 		return {"error": f"Error retrieving schema: {str(e)}"}
 
-
+# List all collections in the Weaviate instance.
 def list_collections(client):
+	print("list_collections() called")
 	try:
 		collections = client.collections.list_all()
 		return list(collections.keys()) if collections else []
 	except Exception as e:
 		return {"error": f"Error retrieving collections: {str(e)}"}
 
-
+# Get the configuration of a collection from the Weaviate instance.
 def fetch_collection_config(cluster_url, api_key, collection_name):
+	print(f"fetch_collection_config() called for collection: {collection_name}")
 	headers = {"Authorization": f"Bearer {api_key}"}
 	endpoint = f"{cluster_url}/v1/schema/"
 	response = requests.get(endpoint, headers=headers)
@@ -140,8 +147,9 @@ def fetch_collection_config(cluster_url, api_key, collection_name):
 				return cls
 	return {"error": f"Error fetching schema: {response.status_code} - {response.text}"}
 
-
+# Process the collection configuration to extract relevant information.
 def process_collection_config(config):
+	print("process_collection_config() called")
 	if not config:
 		return {"error": "No configuration available"}
 

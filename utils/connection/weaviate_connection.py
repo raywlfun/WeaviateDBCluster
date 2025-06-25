@@ -4,15 +4,32 @@ from weaviate.config import AdditionalConfig, Timeout
 
 _client = None
 
-# Function to connect to Weaviate server
-def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None):
-	print("Connecting to Weaviate...")
+# Connect to Weaviate server
+def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None, use_custom=False, http_host_endpoint=None, http_port_endpoint=None, grpc_host_endpoint=None, grpc_port_endpoint=None, custom_secure=False):
+	print("get_weaviate_client() called")
 	global _client
 	if _client is None:
 		headers = vectorizer_integration_keys if vectorizer_integration_keys else {}
 
 		if use_local:
 			_client = weaviate.connect_to_local(
+				auth_credentials=weaviate.auth.AuthApiKey(cluster_api_key),
+				port=http_port_endpoint,
+				grpc_port=grpc_port_endpoint,
+				skip_init_checks=True,
+				additional_config=AdditionalConfig(
+					timeout=Timeout(init=90, query=900, insert=900)
+				),
+				headers=headers
+			)
+		elif use_custom:
+			_client = weaviate.connect_to_custom(
+				http_host=http_host_endpoint,
+				http_port=http_port_endpoint,
+				http_secure=custom_secure,
+				grpc_host=grpc_host_endpoint,
+				grpc_port=grpc_port_endpoint,
+				grpc_secure=custom_secure,
 				auth_credentials=weaviate.auth.AuthApiKey(cluster_api_key),
 				skip_init_checks=True,
 				additional_config=AdditionalConfig(
@@ -33,17 +50,17 @@ def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=F
 		atexit.register(close_weaviate_client)
 	return _client
 
-# Function to close the Weaviate client connection
+# Close the Weaviate client connection
 def close_weaviate_client():
-	print("Disconnecting from Weaviate...")
+	print("close_weaviate_client() called")
 	global _client
 	if _client:
 		_client.close()
 		_client = None
 
-# Weaviate Server & Client status and version
+# Get Weaviate Server & Client status and version
 def status(client):
-	print("Getting Weaviate status...")
+	print("status() called")
 	try:
 		ready = client.is_ready()
 		server_version = client.get_meta()["version"]

@@ -2,14 +2,16 @@ import requests
 import pandas as pd
 from collections import defaultdict
 import streamlit as st
-import json
 
 # Get shards information
 def get_shards_info(client):
-	node_info = client.cluster.nodes(output="verbose")
-	return node_info
+    print("get_shards_info() called")
+    node_info = client.cluster.nodes(output="verbose")
+    return node_info
 
+# Process shards data from node information
 def process_shards_data(node_info):
+    print("process_shards_data() called")
     node_data = []
     shard_data = []
     collection_shard_counts = []
@@ -67,15 +69,14 @@ def process_shards_data(node_info):
         "readonly_shards": pd.DataFrame(readonly_shards) if readonly_shards else pd.DataFrame()
     }
 
-
+# Display shards information
 def display_shards_table(processed_data):
-	return processed_data["node_data"], processed_data["shard_data"]
+    print("display_shards_table() called")
+    return processed_data["node_data"], processed_data["shard_data"]
 
+# Check consistency of shard object counts across nodes. Returns a DataFrame of inconsistencies, or None if consistent.
 def check_shard_consistency(node_info):
-    """
-    Check consistency of shard object counts across nodes.
-    Returns a DataFrame of inconsistencies, or None if consistent.
-    """
+    print("check_shard_consistency() called")
     shard_data = defaultdict(list)
     for node in node_info:
         # node.shards is a list of shards for this node
@@ -104,29 +105,41 @@ def check_shard_consistency(node_info):
 
 # Get cluster Schema
 def get_schema(cluster_url, api_key):
-	try:
-		url = f"{cluster_url}/v1/schema"
-		headers = {"Authorization": f"Bearer {api_key}"}
-		response = requests.get(url, headers=headers)
-		response.raise_for_status()
-		return response.json() 
-	except requests.exceptions.RequestException as e:
-		return {"error": f"Failed to fetch cluster statistics: {e}"}
+    print("get_schema() called with cluster_url:", cluster_url)
+    try:
+        url = f"{cluster_url}/v1/schema"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json() 
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Failed to fetch cluster Schema: {e}"}
+    
+# Get cluster Schema
+def get_schema(client):
+    print("get_schema() called")
+    try:
+        response = client.collections.list_all(simple=False)
+        return response 
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Failed to fetch cluster Schema: {e}"}
 
 # Get cluster statistics
 def fetch_cluster_statistics(cluster_url, api_key):
-	try:
-		url = f"{cluster_url}/v1/cluster/statistics"
-		headers = {"Authorization": f"Bearer {api_key}"}
-		response = requests.get(url, headers=headers)
-		response.raise_for_status() 
+    print("fetch_cluster_statistics() called with cluster_url:", cluster_url)
+    try:
+        url = f"{cluster_url}/v1/cluster/statistics"
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status() 
 
-		return response.json() 
-	except requests.exceptions.RequestException as e:
-		return {"error": f"Failed to fetch cluster statistics: {e}"}
+        return response.json() 
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Failed to fetch cluster statistics: {e}"}
 
-
+# Process cluster statistics data
 def process_statistics(stats):
+    print("process_statistics() called")
     if "statistics" not in stats:
         return {"error": "Invalid statistics data received."}
 
@@ -199,7 +212,9 @@ def process_statistics(stats):
         "network_info": df_network
     }
 
-def get_metadata(cluster_url, api_key):
+# Get cluster metadata
+def get_metadata():
+    print("get_metadata() called")
     try:
         metadata = st.session_state.client.get_meta()
 
@@ -243,6 +258,7 @@ def get_metadata(cluster_url, api_key):
 
 # Trigger read repairs for a collection to force consistency
 def read_repairs(cluster_url, api_key, collection_name):
+    print("read_repairs() called")
     base_url = cluster_url
     class_name = collection_name
     bearer_token = api_key

@@ -11,10 +11,12 @@ import re
 
 # Supported vectorizers
 def get_supported_vectorizers() -> List[str]:
+	print("get_supported_vectorizers() called")
 	return ["text2vec_openai", "text2vec_huggingface", "text2vec_cohere", "text2vec_jinaai", "BYOV"]
 
-# Function to validate file format
+# Validate file format
 def validate_file_format(file_content: str, file_type: str) -> tuple[bool, str, Optional[List[Dict[str, Any]]]]:
+	print("validate_file_format() called")
 	try:
 		if file_type == "csv":
 			# Try to parse CSV
@@ -41,21 +43,22 @@ def validate_file_format(file_content: str, file_type: str) -> tuple[bool, str, 
 	except Exception as e:
 		return False, f"Error parsing file: {str(e)}", None
 
-# Function to check if required API keys are present for the selected vectorizer
+# Check if required API keys are present for the selected vectorizer
 def check_vectorizer_keys(vectorizer: str) -> tuple[bool, str]:
-	"""Check if required API keys are present for the selected vectorizer"""
-	if vectorizer == "text2vec_openai" and not st.session_state.get("openai_key"):
+	print(f"check_vectorizer_keys() called with vectorizer: {vectorizer}")
+	if vectorizer == "text2vec_openai" and not st.session_state.get("active_openai_key"):
 		return False, "OpenAI API key is required. Please reconnect with the key or select BYOV."
-	elif vectorizer == "text2vec_cohere" and not st.session_state.get("cohere_key"):
+	elif vectorizer == "text2vec_cohere" and not st.session_state.get("active_cohere_key"):
 		return False, "Cohere API key is required for text2vec_cohere. Please reconnect with the key or select BYOV."
-	elif vectorizer == "text2vec_jinaai" and not st.session_state.get("jinaai_key"):
+	elif vectorizer == "text2vec_jinaai" and not st.session_state.get("active_jinaai_key"):
 		return False, "JinaAI API key is required. Please reconnect with the key or select BYOV."
-	elif vectorizer == "text2vec_huggingface" and not st.session_state.get("huggingface_key"):
+	elif vectorizer == "text2vec_huggingface" and not st.session_state.get("active_huggingface_key"):
 		return False, "HuggingFace API key is required. Please reconnect with the key or select BYOV."
 	return True, ""
 
-# Function to create a new collection
+# Create a new collection
 def create_collection(client: Client, collection_name: str, vectorizer: str) -> tuple[bool, str]:
+	print(f"create_collection() called with collection_name: {collection_name}, vectorizer: {vectorizer}")
 	try:
 		# Check if collection already exists
 		if client.collections.exists(collection_name):
@@ -88,8 +91,9 @@ def create_collection(client: Client, collection_name: str, vectorizer: str) -> 
 	except Exception as e:
 		return False, f"Error creating collection: {str(e)}"
 
-# Function to sanitize keys for Weaviate
+# Sanitize keys for Weaviate
 def sanitize_keys(data_item: Dict[str, Any]) -> Dict[str, Any]:
+	print("sanitize_keys() called")
 	sanitized_item = {}
 	for key, value in data_item.items():
 		# Replace spaces and invalid characters with underscores
@@ -100,8 +104,9 @@ def sanitize_keys(data_item: Dict[str, Any]) -> Dict[str, Any]:
 		sanitized_item[sanitized_key] = value
 	return sanitized_item
 
-# Function to batch data
-def batch_upload(client: Client, collection_name: str, data: List[Dict[str, Any]], batch_size: int = 250):
+# Batch data. Reduce/Increase Batch Size as per your requirement. You can also pass concurrent_requests in batch.fixed_size(batch_size=1000, concurrent_requests=4)
+def batch_upload(client: Client, collection_name: str, data: List[Dict[str, Any]], batch_size: int = 1000):
+	print(f"batch_upload() called")
 	if not client.collections.exists(collection_name):
 		yield False, f"Collection '{collection_name}' does not exist", None
 		return
@@ -123,18 +128,17 @@ def batch_upload(client: Client, collection_name: str, data: List[Dict[str, Any]
 			except Exception as e:
 				yield False, f"Failed to queue object {i}/{total_objects}: {str(e)}", None
 
-# Function to get the newely created collection
+# Get the newely created collection
 def get_collection_info(client: Client, collection_name: str) -> tuple[bool, str, Optional[Dict[str, Any]]]:
+	print(f"get_collection_info() called for collection: {collection_name}")
 	try:
 		if not client.collections.exists(collection_name):
 			return False, f"Collection '{collection_name}' does not exist", None
 
 		collection = client.collections.get(collection_name)
-		# Use aggregation for total count - CORRECTED
 		aggregate_result = collection.aggregate.over_all()
-
 		# Get schema information using the existing get_schema function
-		schema = get_schema(st.session_state.cluster_endpoint, st.session_state.cluster_api_key)
+		schema = get_schema(st.session_state.client)
 		collection_schema = next((c for c in schema.get("classes", []) if c.get("class") == collection_name), None)
 
 		info = {
@@ -147,8 +151,9 @@ def get_collection_info(client: Client, collection_name: str) -> tuple[bool, str
 	except Exception as e:
 		return False, f"Error getting collection info: {str(e)}", None
 
-# Function to get the first 100 objects from the collection as check up
+# Get the first 100 objects from the collection as check up
 def get_collection_objects(client: Client, collection_name: str, limit: int = 100) -> tuple[bool, str, Optional[pd.DataFrame]]:
+	print(f"get_collection_objects() called")
 	try:
 		if not client.collections.exists(collection_name):
 			return False, f"Collection '{collection_name}' does not exist", None

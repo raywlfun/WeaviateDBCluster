@@ -1,5 +1,6 @@
-# functions to delete collections and tenants from collections in Weaviate
+# Delete collections and tenants from collections in Weaviate
 def delete_collections(client, collection_names):
+	print(f"delete_collections() called with: {collection_names}")
 	try:
 		client.collections.delete(collection_names)
 		return True, f"Successfully deleted collections: {', '.join(collection_names if isinstance(collection_names, list) else [collection_names])}"
@@ -7,6 +8,7 @@ def delete_collections(client, collection_names):
 		return False, f"Error deleting collections: {str(e)}"
 
 def delete_tenants_from_collection(client, collection_name, tenant_names):
+	print(f"delete_tenants_from_collection() called with collection: {collection_name} and tenants: {tenant_names}")
 	try:
 		collection = client.collections.get(collection_name)
 		collection.tenants.remove(tenant_names)
