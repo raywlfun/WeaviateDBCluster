@@ -6,49 +6,53 @@ _client = None
 
 # Connect to Weaviate server
 def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None, use_custom=False, http_host_endpoint=None, http_port_endpoint=None, grpc_host_endpoint=None, grpc_port_endpoint=None, custom_secure=False):
-	print("get_weaviate_client() called")
-	global _client
-	if _client is None:
-		headers = vectorizer_integration_keys if vectorizer_integration_keys else {}
+    print("get_weaviate_client() called")
+    global _client
+    if _client is None:
+        headers = vectorizer_integration_keys if vectorizer_integration_keys else {}
+        if cluster_api_key:
+            auth_credentials = weaviate.auth.AuthApiKey(cluster_api_key)
+        else:
+            auth_credentials = None
 
-		if use_local:
-			_client = weaviate.connect_to_local(
-				auth_credentials=weaviate.auth.AuthApiKey(cluster_api_key),
-				port=http_port_endpoint,
-				grpc_port=grpc_port_endpoint,
-				skip_init_checks=True,
-				additional_config=AdditionalConfig(
-					timeout=Timeout(init=90, query=900, insert=900)
-				),
-				headers=headers
-			)
-		elif use_custom:
-			_client = weaviate.connect_to_custom(
-				http_host=http_host_endpoint,
-				http_port=http_port_endpoint,
-				http_secure=custom_secure,
-				grpc_host=grpc_host_endpoint,
-				grpc_port=grpc_port_endpoint,
-				grpc_secure=custom_secure,
-				auth_credentials=weaviate.auth.AuthApiKey(cluster_api_key),
-				skip_init_checks=True,
-				additional_config=AdditionalConfig(
-					timeout=Timeout(init=90, query=900, insert=900)
-				),
-				headers=headers
-			)
-		else:
-			_client = weaviate.connect_to_weaviate_cloud(
-				cluster_url=cluster_endpoint,
-				auth_credentials=weaviate.auth.AuthApiKey(cluster_api_key),
-				skip_init_checks=True,
-				additional_config=AdditionalConfig(
-					timeout=Timeout(init=90, query=900, insert=900)
-				),
-				headers=headers
-			)
-		atexit.register(close_weaviate_client)
-	return _client
+        if use_local:
+            _client = weaviate.connect_to_local(
+                auth_credentials=auth_credentials,
+                port=http_port_endpoint,
+                grpc_port=grpc_port_endpoint,
+                skip_init_checks=True,
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=90, query=900, insert=900)
+                ),
+                headers=headers,
+            )
+        elif use_custom:
+            _client = weaviate.connect_to_custom(
+                http_host=http_host_endpoint,
+                http_port=http_port_endpoint,
+                http_secure=custom_secure,
+                grpc_host=grpc_host_endpoint,
+                grpc_port=grpc_port_endpoint,
+                grpc_secure=custom_secure,
+                auth_credentials=auth_credentials,
+                skip_init_checks=True,
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=90, query=900, insert=900)
+                ),
+                headers=headers,
+            )
+        else:
+            _client = weaviate.connect_to_weaviate_cloud(
+                cluster_url=cluster_endpoint,
+                auth_credentials=auth_credentials,
+                skip_init_checks=True,
+                additional_config=AdditionalConfig(
+                    timeout=Timeout(init=90, query=900, insert=900)
+                ),
+                headers=headers,
+            )
+        atexit.register(close_weaviate_client)
+    return _client
 
 # Close the Weaviate client connection
 def close_weaviate_client():
