@@ -8,6 +8,7 @@ _client = None
 def get_weaviate_client(cluster_endpoint=None, cluster_api_key=None, use_local=False, vectorizer_integration_keys=None, use_custom=False, http_host_endpoint=None, http_port_endpoint=None, grpc_host_endpoint=None, grpc_port_endpoint=None, custom_secure=False):
     print("get_weaviate_client() called")
     global _client
+    
     if _client is None:
         headers = vectorizer_integration_keys if vectorizer_integration_keys else {}
         if cluster_api_key:
