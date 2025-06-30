@@ -92,7 +92,7 @@ if not st.session_state.client_ready:
 	# Conditional UI based on checkboxes
 	if st.session_state.use_local:
 		st.sidebar.markdown(
-			'Clone the repository from [**Shah91n -> WeaviateCluster**](https://github.com/Shah91n/WeaviateCluster) GitHub and following the installation requirements. Then ensure that you have a local/custom Weaviate instance running on your machine before attempting to connect.'
+			'Clone the repository from [**Shah91n -> WeaviateCluster**](https://github.com/Shah91n/WeaviateCluster) GitHub and following the installation requirements. Then ensure that you have a local Weaviate instance running on your machine before attempting to connect.'
 		)
 		# This is now a display-only field, its value is derived from other state.
 		# It does NOT have a key, which is critical to avoid state conflicts.
@@ -120,7 +120,7 @@ if not st.session_state.client_ready:
 
 	elif st.session_state.use_custom:
 		st.sidebar.markdown(
-			'Clone the repository from [**Shah91n -> WeaviateCluster**](https://github.com/Shah91n/WeaviateCluster) GitHub and following the installation requirements. Then ensure that you have a local/custom Weaviate instance running on your machine before attempting to connect.'
+			'Clone the repository from [**Shah91n -> WeaviateCluster**](https://github.com/Shah91n/WeaviateCluster) GitHub and following the installation requirements. Then ensure that you have a custom Weaviate instance running before attempting to connect.'
 		)
 		st.sidebar.text_input(
 			"Custom HTTP Host",
@@ -260,7 +260,7 @@ if not st.session_state.client_ready:
 					st.rerun()
 				else:
 					st.sidebar.error("Connection failed!")
-	# print("DEBUG session_state:", dict(st.session_state)) - uncomment during development to debug session state
+	# print("DEBUG session_state (On Connect):", dict(st.session_state)) # uncomment during development to debug session state
 else:
 	if st.sidebar.button("Disconnect", use_container_width=True, type="primary"):
 		st.toast('Session, states and cache cleared! Weaviate client disconnected successfully!', icon='🔴')
@@ -268,9 +268,8 @@ else:
 		if st.session_state.get("client_ready"):
 			message = close_weaviate_client()
 			clear_session_state()
-			st.rerun()
+			# print("DEBUG session_state (On Disconnect):", dict(st.session_state)) # uncomment during development to debug session state
 	st.sidebar.info("Disconnect Button does clear all session states and cache, and disconnect the Weaviate client to server if connected.")
-	print("DEBUG session_state:", dict(st.session_state)) # Session state should be cleared on disconnect
 
 # Essential run for the first time
 update_side_bar_labels()
