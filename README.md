@@ -39,6 +39,12 @@ Interact with and manage Weaviate Cluster operations. This app provides tools to
   - Analyze shard consistency
   - Force repair collection objects across nodes
 
+### RBAC
+  - View all users and their roles
+  - View all roles and their permission types
+  - View all permissions in detail
+  - Users & Permissions Report
+
 ### **Multi Tenancy**
   - View MT collections only and configurations
     - With Data cached

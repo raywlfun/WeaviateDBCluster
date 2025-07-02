@@ -10,6 +10,7 @@ def navigate():
 	st.sidebar.image(logo_image,width=100)
 	st.sidebar.page_link("streamlit_app.py", label="Cluster", icon="🔍")
 	st.sidebar.page_link("pages/multitenancy.py", label="Multi Tenancy", icon="📄")
+	st.sidebar.page_link("pages/rbac.py", label="Role-Based Access Control", icon="🔐")
 	st.sidebar.page_link("pages/search.py", label="Search", icon="🧐")
 	st.sidebar.page_link("pages/create.py", label="Create", icon="➕")
 	st.sidebar.page_link("pages/read.py", label="Read", icon="📁")
