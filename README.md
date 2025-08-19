@@ -1,3 +1,6 @@
+# Credit
+This image is based on [Shah91n/WeaviateDBCluster](https://github.com/Shah91n/WeaviateDBCluster). All credit to the original author - this fork only adds docker-compose support and publishes an image for convenience (TBD)
+
 # Weaviate Cluster Operations
 
 ## Overview
